@@ -41,7 +41,8 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //SUPPORTED ATTRIBUTES (OPTIONS)
 
       //minimal no of characters that needs to be entered before typeahead kicks-in
-      var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 1;
+      //ahneo: set default minLength to 0
+      var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 0;
 
       //minimal wait time after last character typed before typehead kicks-in
       var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
@@ -173,34 +174,31 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
       var timeoutPromise;
 
-      var scheduleSearchWithTimeout = function(inputValue) {
-        timeoutPromise = $timeout(function () {
-          getMatchesAsync(inputValue);
-        }, waitTime);
-      };
-
-      var cancelPreviousTimeout = function() {
-        if (timeoutPromise) {
-          $timeout.cancel(timeoutPromise);
-        }
-      };
-
       //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
       //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
       modelCtrl.$parsers.unshift(function (inputValue) {
 
+        // set input value to empty string if it contains " " string value
+        if (inputValue === " ") {
+            inputValue = "";
+            modelCtrl.$setViewValue("");
+        }  
+                    
         hasFocus = true;
 
-        if (inputValue && inputValue.length >= minSearch) {
+        if (minSearch === 0 || (inputValue && inputValue.length >= minSearch)) {
           if (waitTime > 0) {
-            cancelPreviousTimeout();
-            scheduleSearchWithTimeout(inputValue);
+            if (timeoutPromise) {
+              $timeout.cancel(timeoutPromise);//cancel previous timeout
+            }
+            timeoutPromise = $timeout(function () {
+              getMatchesAsync(inputValue);
+            }, waitTime);
           } else {
             getMatchesAsync(inputValue);
           }
         } else {
           isLoadingSetter(originalScope, false);
-          cancelPreviousTimeout();
           resetMatches();
         }
 
@@ -297,6 +295,13 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
       element.bind('blur', function (evt) {
         hasFocus = false;
+      });
+      
+      //bind element to focus event to trigger modelCtrl.$parsers.unshift method
+      element.bind('focus', function (evt) {
+          if (!modelCtrl.$viewValue) {
+              modelCtrl.$setViewValue(" ");
+          }
       });
 
       // Keep reference to click handler to unbind it.
