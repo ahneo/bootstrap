@@ -41,7 +41,6 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //SUPPORTED ATTRIBUTES (OPTIONS)
 
       //minimal no of characters that needs to be entered before typeahead kicks-in
-      //ahneo: set default minLength to 0
       var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 0;
 
       //minimal wait time after last character typed before typehead kicks-in
