@@ -177,11 +177,11 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //$parsers kick-in on all the changes coming from the view as well as manually triggered by $setViewValue
       modelCtrl.$parsers.unshift(function (inputValue) {
 
-        // set input value to empty string if it contains " " string value
-        if (inputValue === " ") {
-            inputValue = "";
-            modelCtrl.$setViewValue("");
-        }  
+        // set input value to empty string if it contains ' ' string value
+        if (inputValue === ' ') {
+            inputValue = '';
+            modelCtrl.$setViewValue('');
+        }
                     
         hasFocus = true;
 
@@ -299,7 +299,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //bind element to focus event to trigger modelCtrl.$parsers.unshift method
       element.bind('focus', function (evt) {
           if (!modelCtrl.$viewValue) {
-              modelCtrl.$setViewValue(" ");
+              modelCtrl.$setViewValue(' ');
           }
       });
 
